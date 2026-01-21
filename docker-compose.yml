@@ -22,11 +22,5 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
 
-deploy:
-  resources:
-    limits:
-      memory: 2g
-
-
 volumes:
   n8n_data:
