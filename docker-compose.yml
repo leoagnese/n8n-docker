@@ -14,10 +14,19 @@ services:
       N8N_PORT: 5678
       N8N_PROTOCOL: http
       WEBHOOK_URL: http://localhost:5678
+      N8N_EXECUTIONS_PROCESS: "main"
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      SERPAPI_API_KEY: ${SERPAPI_API_KEY}
 
       GENERIC_TIMEZONE: Europe/Rome
     volumes:
       - n8n_data:/home/node/.n8n
+
+deploy:
+  resources:
+    limits:
+      memory: 2g
+
 
 volumes:
   n8n_data:
