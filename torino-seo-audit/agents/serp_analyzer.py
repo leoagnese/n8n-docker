@@ -322,330 +322,362 @@ Rispondi solo con JSON valido."""
         print(f"\n✓ Audit salvato in {filepath}")
     
     def generate_report_html(self, audit: Dict, filepath: str):
-        """Genera un report HTML leggibile."""
-        print("→ Generazione report HTML...")
+        """Genera una dashboard HTML moderna e professionale."""
+        print("→ Generazione dashboard HTML...")
+        
+        import html as html_module
         
         # Calcola valori formattati
         avg_position = audit['brand_visibility']['average_position_value']
         avg_position_str = f"{avg_position:.1f}" if avg_position else "N/A"
+        
+        # Prepara dati SERP (assumendo che siano stati salvati nell'audit)
+        serp_results = audit.get('_raw_serp_results', [])
         
         html = f"""<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEO Audit - {audit['metadata']['target_brand']}</title>
+    <title>SEO Dashboard - {audit['metadata']['target_brand']}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {{
+            theme: {{
+                extend: {{
+                    colors: {{
+                        brand: '#667eea',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }}
+                }}
+            }}
+        }}
+    </script>
     <style>
-        body {{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }}
-        .header {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }}
-        .header h1 {{
-            margin: 0;
-            font-size: 2.5em;
-        }}
-        .metadata {{
-            opacity: 0.9;
-            margin-top: 10px;
-        }}
-        .section {{
-            background: white;
-            padding: 30px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }}
-        .section h2 {{
-            color: #667eea;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-            margin-top: 0;
-        }}
-        .metric {{
-            display: inline-block;
-            background: #f8f9fa;
-            padding: 20px 30px;
-            margin: 10px 10px 10px 0;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }}
-        .metric-value {{
-            font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
-        }}
-        .metric-label {{
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }}
-        table {{
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }}
-        th, td {{
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }}
-        th {{
-            background: #667eea;
-            color: white;
-            font-weight: 600;
-        }}
-        tr:hover {{
-            background: #f8f9fa;
-        }}
-        .recommendation {{
-            background: #e3f2fd;
-            border-left: 4px solid #2196f3;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-        }}
-        .opportunity {{
-            background: #f3e5f5;
-            border-left: 4px solid #9c27b0;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-        }}
-        .alert {{
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-        }}
+        .card-hover {{ transition: transform 0.2s, box-shadow 0.2s; }}
+        .card-hover:hover {{ transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }}
+        .gradient-brand {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }}
+        .tag {{ display: inline-block; padding: 0.25rem 0.75rem; margin: 0.25rem; border-radius: 9999px; font-size: 0.875rem; }}
+        .accordion-content {{ max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }}
+        .accordion-content.active {{ max-height: 500px; }}
+        @keyframes fadeIn {{ from {{ opacity: 0; transform: translateY(10px); }} to {{ opacity: 1; transform: translateY(0); }} }}
+        .fade-in {{ animation: fadeIn 0.5s ease-out; }}
     </style>
 </head>
-<body>
-    <div class="header">
-        <h1>SEO & Geo Audit Report</h1>
-        <div class="metadata">
-            <strong>Target:</strong> {audit['metadata']['target_brand']}<br>
-            <strong>Data:</strong> {audit['metadata']['timestamp']}<br>
-            <strong>Query Analizzate:</strong> {audit['metadata']['total_queries']}
+<body class="bg-gray-50 text-gray-900">
+    <!-- Header -->
+    <div class="gradient-brand text-white p-8 shadow-xl">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-4xl font-bold mb-2">SEO & GEO Audit Dashboard</h1>
+            <p class="text-lg opacity-90">
+                <span class="font-semibold">{audit['metadata']['target_brand']}</span> · 
+                {audit['metadata']['timestamp'][:10]} · 
+                {audit['metadata']['total_queries']} query analizzate
+            </p>
         </div>
     </div>
 
-    <div class="section">
-        <h2>📊 Visibilità Brand</h2>
-        <div class="metric">
-            <div class="metric-value">{audit['brand_visibility']['queries_with_brand']}/{audit['metadata']['total_queries']}</div>
-            <div class="metric-label">Query con Brand</div>
-        </div>
-        <div class="metric">
-            <div class="metric-value">{audit['brand_visibility']['total_appearances']}</div>
-            <div class="metric-label">Apparizioni Totali</div>
-        </div>
-        <div class="metric">
-            <div class="metric-value">{avg_position_str}</div>
-            <div class="metric-label">Posizione Media</div>
-        </div>
-        <div class="metric">
-            <div class="metric-value">{audit['brand_visibility']['top_3_appearances']}</div>
-            <div class="metric-label">Top 3 Posizioni</div>
-        </div>
-    </div>
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in">
+            <!-- Card 1: Brand Visibility -->
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-3xl">📊</div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-brand">{audit['brand_visibility']['queries_with_brand']}/{audit['metadata']['total_queries']}</div>
+                        <div class="text-sm text-gray-600 mt-1">Query con Brand</div>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-brand h-2 rounded-full" style="width: {(audit['brand_visibility']['queries_with_brand']/audit['metadata']['total_queries']*100) if audit['metadata']['total_queries'] > 0 else 0}%"></div>
+                </div>
+            </div>
 
-    <div class="section">
-        <h2>🌍 Distribuzione Geografica</h2>
-        <table>
-            <tr>
-                <th>Lingua</th>
-                <th>Query Analizzate</th>
-            </tr>
+            <!-- Card 2: Average Position -->
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-3xl">🎯</div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold {'text-success' if avg_position and avg_position <= 3 else 'text-warning' if avg_position and avg_position <= 7 else 'text-danger'}">{avg_position_str}</div>
+                        <div class="text-sm text-gray-600 mt-1">Posizione Media</div>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500">Top 3: {audit['brand_visibility']['top_3_appearances']} apparizioni</div>
+            </div>
+
+            <!-- Card 3: Total Appearances -->
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-3xl">⚡</div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-brand">{audit['brand_visibility']['total_appearances']}</div>
+                        <div class="text-sm text-gray-600 mt-1">Apparizioni Totali</div>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500">Top 10: {audit['brand_visibility']['top_10_appearances']} volte</div>
+            </div>
+
+            <!-- Card 4: Competitors -->
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-3xl">🌍</div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-brand">{audit['competitor_analysis']['total_unique_domains']}</div>
+                        <div class="text-sm text-gray-600 mt-1">Domini Competitor</div>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500">{len(audit['geo_analysis']['by_language'])} lingue analizzate</div>
+            </div>
+        </div>
+
+        <!-- SERP Visualization -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 fade-in">
+            <h2 class="text-2xl font-bold mb-6 text-brand flex items-center">
+                <span class="mr-2">🔍</span> Risultati Organici SERP
+            </h2>
+            <div class="space-y-4">
+"""
+        
+        # Mostra risultati organici per ogni query (prendendo dalle URLs trovate o dai competitor)
+        position_colors = {
+            1: 'border-yellow-400 bg-yellow-50',
+            2: 'border-gray-400 bg-gray-50',
+            3: 'border-orange-400 bg-orange-50'
+        }
+        
+        # Top 10 competitor per mostrare i risultati
+        top_results = audit['competitor_analysis']['top_competitors'][:10]
+        for idx, comp in enumerate(top_results, 1):
+            color_class = position_colors.get(comp['best_position'], 'border-gray-200 bg-white')
+            is_brand = 'turismotorino' in comp['domain'].lower()
+            badge_class = 'bg-success text-white' if is_brand else 'bg-gray-200 text-gray-700'
+            
+            html += f"""                <div class="border-l-4 {color_class} p-4 rounded-lg">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-lg font-bold text-gray-400">#{comp['best_position']}</span>
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold {badge_class}">
+                                    {'✅ TARGET BRAND' if is_brand else comp['domain']}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <div>🌐 <span class="font-mono text-xs">{html_module.escape(comp['domain'])}</span></div>
+                                <div>📊 Apparizioni: <span class="font-semibold">{comp['appearances']}</span> · Pos. media: <span class="font-semibold">{comp['average_position']:.1f}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+"""
+        
+        html += """            </div>
+        </div>
+
+        <!-- Brand Status & SERP Features Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Brand Status -->
+            <div class="bg-white rounded-xl shadow-lg p-6 fade-in">
+                <h3 class="text-xl font-bold mb-4 text-brand flex items-center">
+                    <span class="mr-2">✅</span> Brand Status
+                </h3>
+"""
+        
+        if audit['brand_visibility']['queries_with_brand'] > 0:
+            html += f"""                <div class="bg-green-50 border-l-4 border-success p-4 rounded mb-4">
+                    <div class="font-bold text-success mb-2">PRESENTE</div>
+                    <div class="text-sm text-gray-700">
+                        📍 Posizione: <span class="font-bold">#{avg_position_str}</span><br>
+                        📄 Apparizioni: <span class="font-bold">{audit['brand_visibility']['total_appearances']}</span>
+                    </div>
+                </div>
+                
+                <!-- Position Chart -->
+                <div class="mt-4">
+                    <div class="text-xs text-gray-600 mb-2">Distribuzione posizioni (1-10):</div>
+                    <div class="flex gap-1">
+"""
+            for pos in range(1, 11):
+                is_active = any(item.get('position') == pos for item in audit['brand_visibility']['urls_found'])
+                html += f'                        <div class="flex-1 h-8 rounded {"bg-brand" if is_active else "bg-gray-200"} flex items-center justify-center text-xs text-white font-bold">{pos if is_active else ""}</div>\n'
+            
+            html += """                    </div>
+                </div>
+"""
+        else:
+            html += """                <div class="bg-red-50 border-l-4 border-danger p-4 rounded">
+                    <div class="font-bold text-danger mb-2">❌ NON PRESENTE</div>
+                    <div class="text-sm text-gray-700">Il brand non appare nei primi 10 risultati</div>
+                </div>
+"""
+        
+        html += """            </div>
+
+            <!-- SERP Features -->
+            <div class="bg-white rounded-xl shadow-lg p-6 fade-in">
+                <h3 class="text-xl font-bold mb-4 text-brand flex items-center">
+                    <span class="mr-2">📊</span> SERP Features
+                </h3>
+                <div class="space-y-3">
+"""
+        
+        features = [
+            ('✅' if audit['serp_features']['knowledge_graph_count'] > 0 else '❌', 'Knowledge Graph', f"{audit['serp_features']['knowledge_graph_count']}/{audit['metadata']['total_queries']} query"),
+            ('✅' if audit['serp_features']['people_also_ask_count'] > 0 else '❌', 'People Also Ask', f"{audit['serp_features']['people_also_ask_count']}/{audit['metadata']['total_queries']} query"),
+            ('✅' if audit['serp_features']['related_searches_count'] > 0 else '❌', 'Related Searches', f"{audit['serp_features']['related_searches_count']}/{audit['metadata']['total_queries']} query"),
+            ('⚠️' if audit['serp_features']['rich_snippets_count'] > 0 else '❌', 'Rich Snippets', f"{audit['serp_features']['rich_snippets_count']} trovati"),
+        ]
+        
+        for icon, name, value in features:
+            html += f"""                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <span class="flex items-center gap-2"><span class="text-xl">{icon}</span> <span class="font-medium">{name}</span></span>
+                        <span class="text-sm text-gray-600">{value}</span>
+                    </div>
+"""
+        
+        html += """                </div>
+            </div>
+        </div>
+
+        <!-- People Also Ask Accordion -->
+"""
+        
+        if audit['content_insights'].get('top_questions'):
+            html += """        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 fade-in">
+            <h3 class="text-xl font-bold mb-4 text-brand flex items-center">
+                <span class="mr-2">❓</span> People Also Ask
+            </h3>
+            <div class="space-y-2">
+"""
+            for idx, item in enumerate(audit['content_insights']['top_questions'][:8]):
+                question = html_module.escape(item.get('question') or '')
+                html += f"""                <div class="border border-gray-200 rounded-lg">
+                    <button onclick="this.nextElementSibling.classList.toggle('active')" class="w-full text-left p-4 hover:bg-gray-50 flex items-center justify-between">
+                        <span class="font-medium">{question}</span>
+                        <span class="text-gray-400">▼</span>
+                    </button>
+                    <div class="accordion-content px-4 bg-gray-50">
+                        <div class="py-3 text-sm text-gray-600">Frequenza: {item.get('count', 0)} volte</div>
+                    </div>
+                </div>
+"""
+            html += """            </div>
+        </div>
+"""
+        
+        # Related Searches Tag Cloud
+        if audit['content_insights'].get('top_related_searches'):
+            html += """        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 fade-in">
+            <h3 class="text-xl font-bold mb-4 text-brand flex items-center">
+                <span class="mr-2">🔗</span> Related Searches
+            </h3>
+            <div class="flex flex-wrap gap-2">
+"""
+            for item in audit['content_insights']['top_related_searches'][:20]:
+                query = html_module.escape(item.get('query') or '')
+                html += f"""                <span class="tag bg-brand text-white">{query} <span class="opacity-75">({item.get('count', 0)})</span></span>
+"""
+            html += """            </div>
+        </div>
+"""
+        
+        # Competitor Analysis Table
+        html += """        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 fade-in">
+            <h3 class="text-xl font-bold mb-4 text-brand flex items-center">
+                <span class="mr-2">🏆</span> Analisi Competitor
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold">Dominio</th>
+                            <th class="px-4 py-3 text-center font-semibold">Apparizioni</th>
+                            <th class="px-4 py-3 text-center font-semibold">Pos. Media</th>
+                            <th class="px-4 py-3 text-center font-semibold">Migliore</th>
+                            <th class="px-4 py-3 text-center font-semibold">Peggiore</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+"""
+        
+        for comp in audit['competitor_analysis']['top_competitors'][:15]:
+            is_brand = 'turismotorino' in comp['domain'].lower()
+            row_class = 'bg-green-50 font-semibold' if is_brand else 'hover:bg-gray-50'
+            html += f"""                        <tr class="{row_class}">
+                            <td class="px-4 py-3 border-t">{html_module.escape(comp['domain'])} {'✅' if is_brand else ''}</td>
+                            <td class="px-4 py-3 border-t text-center">{comp['appearances']}</td>
+                            <td class="px-4 py-3 border-t text-center">{comp['average_position']:.1f}</td>
+                            <td class="px-4 py-3 border-t text-center font-bold">#{comp['best_position']}</td>
+                            <td class="px-4 py-3 border-t text-center">#{comp['worst_position']}</td>
+                        </tr>
+"""
+        
+        html += """                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Performance per Lingua & Intent -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Performance Lingua -->
+            <div class="bg-white rounded-xl shadow-lg p-6 fade-in">
+                <h3 class="text-xl font-bold mb-4 text-brand flex items-center">
+                    <span class="mr-2">🌍</span> Performance per Lingua
+                </h3>
+                <div class="space-y-3">
 """
         
         for lang, count in audit['geo_analysis']['by_language'].items():
-            html += f"""            <tr>
-                <td>{lang.upper()}</td>
-                <td>{count}</td>
-            </tr>
+            lang_upper = lang.upper()
+            brand_count = audit['brand_visibility']['by_language'].get(lang, 0)
+            percentage = (brand_count / count * 100) if count > 0 else 0
+            html += f"""                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="font-medium">{lang_upper}</span>
+                            <span class="text-sm text-gray-600">{brand_count}/{count} query</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-brand h-2 rounded-full" style="width: {percentage}%"></div>
+                        </div>
+                    </div>
 """
         
-        html += """        </table>
-    </div>
+        html += """                </div>
+            </div>
 
-    <div class="section">
-        <h2>🏆 Top Competitor</h2>
-        <table>
-            <tr>
-                <th>Dominio</th>
-                <th>Apparizioni</th>
-                <th>Posizione Media</th>
-                <th>Best Position</th>
-            </tr>
+            <!-- Performance Intent -->
+            <div class="bg-white rounded-xl shadow-lg p-6 fade-in">
+                <h3 class="text-xl font-bold mb-4 text-brand flex items-center">
+                    <span class="mr-2">🎯</span> Performance per Intent
+                </h3>
+                <div class="space-y-3">
 """
         
-        for comp in audit['competitor_analysis']['top_competitors'][:10]:
-            html += f"""            <tr>
-                <td>{comp['domain']}</td>
-                <td>{comp['appearances']}</td>
-                <td>{comp['average_position']:.1f}</td>
-                <td>{comp['best_position']}</td>
-            </tr>
+        for intent, count in audit['brand_visibility']['by_intent'].items():
+            html += f"""                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <span class="font-medium capitalize">{intent}</span>
+                        <span class="px-3 py-1 bg-brand text-white rounded-full text-sm font-bold">{count}</span>
+                    </div>
 """
         
-        html += """        </table>
-    </div>
-"""
-        
-        # SERP Features
-        html += """    <div class="section">
-        <h2>📊 SERP Features</h2>
-        <div class="metric">
-            <div class="metric-value">{}</div>
-            <div class="metric-label">Knowledge Graph</div>
+        html += """                </div>
+            </div>
         </div>
-        <div class="metric">
-            <div class="metric-value">{}</div>
-            <div class="metric-label">Related Searches</div>
-        </div>
-        <div class="metric">
-            <div class="metric-value">{}</div>
-            <div class="metric-label">People Also Ask</div>
-        </div>
-        <div class="metric">
-            <div class="metric-value">{}</div>
-            <div class="metric-label">Rich Snippets</div>
+
+        <!-- Footer -->
+        <div class="text-center text-sm text-gray-500 mt-12 pb-8">
+            <p>Report generato il {audit['metadata']['timestamp']} · Turismo Torino SEO Audit Tool</p>
         </div>
     </div>
-""".format(
-            f"{audit['serp_features']['knowledge_graph_count']}/{audit['metadata']['total_queries']} query",
-            f"{audit['serp_features']['related_searches_count']}/{audit['metadata']['total_queries']} query",
-            f"{audit['serp_features']['people_also_ask_count']}/{audit['metadata']['total_queries']} query",
-            audit['serp_features']['rich_snippets_count']
-        )
-        
-        # Related Searches
-        if audit['content_insights'].get('top_related_searches'):
-            html += """    <div class="section">
-        <h2>🔗 Related Searches (Ricerche Correlate)</h2>
-        <table>
-            <tr>
-                <th>Query Correlata</th>
-                <th>Frequenza</th>
-            </tr>
-"""
-            for item in audit['content_insights']['top_related_searches'][:20]:
-                import html as html_module
-                query_escaped = html_module.escape(item.get('query') or '')
-                html += f"""            <tr>
-                <td>{query_escaped}</td>
-                <td>{item.get('count', 0)}</td>
-            </tr>
-"""
-            html += """        </table>
-    </div>
-"""
-        
-        # People Also Ask
-        if audit['content_insights'].get('top_questions'):
-            html += """    <div class="section">
-        <h2>❓ People Also Ask (Domande Frequenti)</h2>
-        <table>
-            <tr>
-                <th>Domanda</th>
-                <th>Frequenza</th>
-            </tr>
-"""
-            for item in audit['content_insights']['top_questions'][:20]:
-                import html as html_module
-                question_escaped = html_module.escape(item.get('question') or '')
-                html += f"""            <tr>
-                <td>{question_escaped}</td>
-                <td>{item.get('count', 0)}</td>
-            </tr>
-"""
-            html += """        </table>
-    </div>
-"""
-        
-        # Dettaglio Apparizioni Brand
-        if audit['brand_visibility']['urls_found']:
-            html += """    <div class="section">
-        <h2>🔍 Dettaglio Apparizioni Brand</h2>
-        <table>
-            <tr>
-                <th>Query</th>
-                <th>Posizione</th>
-                <th>URL</th>
-            </tr>
-"""
-            import html as html_module
-            for item in audit['brand_visibility']['urls_found']:
-                query_escaped = html_module.escape(item.get('query', ''))
-                url_escaped = html_module.escape(item.get('url', ''))
-                html += f"""            <tr>
-                <td>{query_escaped}</td>
-                <td>{item.get('position', 'N/A')}</td>
-                <td style="word-break: break-all; max-width: 400px;">{url_escaped}</td>
-            </tr>
-"""
-            html += """        </table>
-    </div>
-"""
-        
-        # Performance per Lingua
-        if audit['brand_visibility']['by_language']:
-            html += """    <div class="section">
-        <h2>📈 Performance per Lingua</h2>
-        <table>
-            <tr>
-                <th>Lingua</th>
-                <th>Apparizioni Brand</th>
-            </tr>
-"""
-            for lang, count in audit['brand_visibility']['by_language'].items():
-                html += f"""            <tr>
-                <td>{lang.upper()}</td>
-                <td>{count}</td>
-            </tr>
-"""
-            html += """        </table>
-    </div>
-"""
-        
-        # Performance per Intent
-        if audit['brand_visibility']['by_intent']:
-            html += """    <div class="section">
-        <h2>🎯 Performance per Intent</h2>
-        <table>
-            <tr>
-                <th>Intent</th>
-                <th>Apparizioni Brand</th>
-            </tr>
-"""
-            for intent, count in audit['brand_visibility']['by_intent'].items():
-                html += f"""            <tr>
-                <td>{intent.capitalize()}</td>
-                <td>{count}</td>
-            </tr>
-"""
-            html += """        </table>
-    </div>
-"""
-        
-        html += """</body>
+</body>
 </html>"""
         
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(html)
         
-        print(f"✓ Report HTML salvato in {filepath}")
+        print(f"✓ Dashboard HTML salvata in {filepath}")
 
 
 if __name__ == "__main__":
