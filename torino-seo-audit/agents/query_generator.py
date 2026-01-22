@@ -38,7 +38,7 @@ class QueryGeneratorAgent:
         Args:
             num_queries: Numero totale di query da generare (default: 100)
             languages: Liste di lingue (default: ['it', 'fr', 'en'])
-            topics: Lista di topic (default: eventi, attrazioni, ristoranti, ecc.)
+            topics: Lista di topic (default: eventi, attrazioni, ecc.)
         
         Returns:
             Lista di dizionari con {query, language, location, intent}
@@ -52,7 +52,6 @@ class QueryGeneratorAgent:
                 'concerti e musica',
                 'mostre e musei',
                 'festival',
-                'ristoranti e cucina locale',
                 'attrazioni turistiche',
                 'attività sportive',
                 'vita notturna',
@@ -95,10 +94,22 @@ Fornisci il risultato in formato JSON come array di oggetti con questa struttura
 Genera esattamente {num_queries} query diverse e creative."""
 
         try:
+            system_prompt = """Sei un esperto di turismo che genera query di ricerca realistiche per il sito ufficiale Turismo Torino (turismotorino.org).
+
+Il sito copre:
+- TERRITORIO: Torino città (prima capitale d'Italia, architettura sabauda, fiume Po), Montagne Olimpiche, Parco Gran Paradiso, colline, laghi, Alpi occidentali
+- MUSEI & CULTURA: musei più visitati, Beni UNESCO (Residenze Reali Sabaude), spiritualità, luoghi sacri
+- ENOGASTRONOMIA: cucina piemontese patrimonio UNESCO, prodotti tipici, ristoranti, CioccolaTò
+- NATURA & SPORT: montagna inverno, sci, escursioni, parchi naturali, eventi sportivi
+- EVENTI: grandi eventi (CioccolaTò, ATP Finals), concerti, mostre, festival
+- SERVIZI: Torino+Piemonte Card, Welcome Tour, visite guidate, info turistiche
+
+Genera query che un turista reale farebbe cercando questi argomenti specifici."""
+            
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",  # Modello economico: 20x più economico di GPT-4o
                 messages=[
-                    {"role": "system", "content": "Sei un esperto di turismo e SEO che genera query di ricerca realistiche."},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.9,  # Alta creatività per maggiore varietà

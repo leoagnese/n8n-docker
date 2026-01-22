@@ -503,29 +503,140 @@ Rispondi solo con JSON valido."""
     </div>
 """
         
-        # AI Insights
-        if 'ai_insights' in audit and 'strategic_recommendations' in audit['ai_insights']:
-            html += """    <div class="section">
-        <h2>🤖 Raccomandazioni Strategiche AI</h2>
-"""
-            for rec in audit['ai_insights']['strategic_recommendations']:
-                html += f"""        <div class="recommendation">
-            {rec}
+        # SERP Features
+        html += """    <div class="section">
+        <h2>📊 SERP Features</h2>
+        <div class="metric">
+            <div class="metric-value">{}</div>
+            <div class="metric-label">Knowledge Graph</div>
         </div>
+        <div class="metric">
+            <div class="metric-value">{}</div>
+            <div class="metric-label">Related Searches</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">{}</div>
+            <div class="metric-label">People Also Ask</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value">{}</div>
+            <div class="metric-label">Rich Snippets</div>
+        </div>
+    </div>
+""".format(
+            f"{audit['serp_features']['knowledge_graph_count']}/{audit['metadata']['total_queries']} query",
+            f"{audit['serp_features']['related_searches_count']}/{audit['metadata']['total_queries']} query",
+            f"{audit['serp_features']['people_also_ask_count']}/{audit['metadata']['total_queries']} query",
+            audit['serp_features']['rich_snippets_count']
+        )
+        
+        # Related Searches
+        if audit['content_insights'].get('top_related_searches'):
+            html += """    <div class="section">
+        <h2>🔗 Related Searches (Ricerche Correlate)</h2>
+        <table>
+            <tr>
+                <th>Query Correlata</th>
+                <th>Frequenza</th>
+            </tr>
 """
-            html += """    </div>
+            for item in audit['content_insights']['top_related_searches'][:20]:
+                import html as html_module
+                query_escaped = html_module.escape(item.get('query') or '')
+                html += f"""            <tr>
+                <td>{query_escaped}</td>
+                <td>{item.get('count', 0)}</td>
+            </tr>
+"""
+            html += """        </table>
+    </div>
 """
         
-        if 'ai_insights' in audit and 'seo_opportunities' in audit['ai_insights']:
+        # People Also Ask
+        if audit['content_insights'].get('top_questions'):
             html += """    <div class="section">
-        <h2>💡 Opportunità SEO</h2>
+        <h2>❓ People Also Ask (Domande Frequenti)</h2>
+        <table>
+            <tr>
+                <th>Domanda</th>
+                <th>Frequenza</th>
+            </tr>
 """
-            for opp in audit['ai_insights']['seo_opportunities']:
-                html += f"""        <div class="opportunity">
-            {opp}
-        </div>
+            for item in audit['content_insights']['top_questions'][:20]:
+                import html as html_module
+                question_escaped = html_module.escape(item.get('question') or '')
+                html += f"""            <tr>
+                <td>{question_escaped}</td>
+                <td>{item.get('count', 0)}</td>
+            </tr>
 """
-            html += """    </div>
+            html += """        </table>
+    </div>
+"""
+        
+        # Dettaglio Apparizioni Brand
+        if audit['brand_visibility']['urls_found']:
+            html += """    <div class="section">
+        <h2>🔍 Dettaglio Apparizioni Brand</h2>
+        <table>
+            <tr>
+                <th>Query</th>
+                <th>Posizione</th>
+                <th>URL</th>
+            </tr>
+"""
+            import html as html_module
+            for item in audit['brand_visibility']['urls_found']:
+                query_escaped = html_module.escape(item.get('query', ''))
+                url_escaped = html_module.escape(item.get('url', ''))
+                html += f"""            <tr>
+                <td>{query_escaped}</td>
+                <td>{item.get('position', 'N/A')}</td>
+                <td style="word-break: break-all; max-width: 400px;">{url_escaped}</td>
+            </tr>
+"""
+            html += """        </table>
+    </div>
+"""
+        
+        # Performance per Lingua
+        if audit['brand_visibility']['by_language']:
+            html += """    <div class="section">
+        <h2>📈 Performance per Lingua</h2>
+        <table>
+            <tr>
+                <th>Lingua</th>
+                <th>Apparizioni Brand</th>
+            </tr>
+"""
+            for lang, count in audit['brand_visibility']['by_language'].items():
+                html += f"""            <tr>
+                <td>{lang.upper()}</td>
+                <td>{count}</td>
+            </tr>
+"""
+            html += """        </table>
+    </div>
+"""
+        
+        # Performance per Intent
+        if audit['brand_visibility']['by_intent']:
+            html += """    <div class="section">
+        <h2>🎯 Performance per Intent</h2>
+        <table>
+            <tr>
+                <th>Intent</th>
+                <th>Apparizioni Brand</th>
+            </tr>
+"""
+            for intent, count in audit['brand_visibility']['by_intent'].items():
+                html += f"""            <tr>
+                <td>{intent.capitalize()}</td>
+                <td>{count}</td>
+            </tr>
+"""
+            html += """        </table>
+    </div>
 """
         
         html += """</body>

@@ -219,18 +219,19 @@ def main():
     
     # Configurazione audit
     # BUDGET LIMIT: $0.01 per sessione
-    # Con GPT-4o-mini: 5 query = ~$0.003 (OpenAI) + $0 (SerpAPI free)
-    # Per aumentare query, passa a piano SerpAPI a pagamento
+    # Con GPT-4o-mini: 3 query (1 per lingua) = ~$0.002 (OpenAI) + $0 (SerpAPI free)
+    # Report HTML per revisione con SEO e cliente (JSON per backup dati)
     
-    num_queries = 5  # MAX per stare sotto $0.01 con GPT-4o-mini
+    num_queries = 3  # 1 query per lingua (IT, FR, EN) - test
     
     print("Configurazione audit:")
-    print(f"  - Query da generare: {num_queries}")
+    print(f"  - Query da generare: {num_queries} (1 per lingua)")
     print("  - Modello LLM: GPT-4o-mini (economico)")
     print("  - Delay tra SERP: 1.0s")
     print("  - Lingue: IT, FR, EN")
-    print(f"\n💰 Costo stimato: ~$0.003-0.005 (SOTTO BUDGET $0.01)")
-    print(f"⏱️  Tempo stimato: ~1-2 minuti\n")
+    print(f"  - Output: Report HTML completo (priorità su JSON)")
+    print(f"\n💰 Costo stimato: ~$0.002-0.003 (SOTTO BUDGET $0.01)")
+    print(f"⏱️  Tempo stimato: ~30-45 secondi\n")
     print("→ Avvio audit...\n")
     
     orchestrator.run_full_audit(
